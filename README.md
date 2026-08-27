@@ -16,29 +16,34 @@ The following diagram illustrates the complete data pipeline, from telephonic au
 
 ```mermaid
 graph TD
-    %% 1. Ingestion
-    A[Twilio Media Stream] -->|WebSocket 8kHz μ-law| B[Ingestion Layer]
+    subgraph Layer1 [1. Ingestion Layer]
+        A[Twilio Media Stream] -->|WebSocket 8kHz μ-law| B[Ingestion Receiver]
+    end
     
-    %% 2. Buffer
-    B -->|Resample to 16kHz PCM| C[Buffer Management]
-    C -->|32k samples / 2.0s window| D{500ms Hop Stride}
+    subgraph Layer2 [2. Buffer Management]
+        B -->|Resample to 16kHz PCM| C[Sliding Window Buffer]
+        C -->|32k samples / 2.0s window| D{500ms Hop Stride}
+    end
     
-    %% 3. Extraction
-    D --> E[Concurrent Feature Extraction]
-    E -->|Micro-Acoustic Metrics| F(PhysioSpecNet Tensor)
-    E -->|Biomechanical Dynamics| F
-    E -->|Forensic Spectrograms| F
+    subgraph Layer3 [3. Feature Extraction]
+        D --> E[Concurrent Extraction Pipeline]
+        E -->|Micro-Acoustic Metrics| F(PhysioSpecNet Tensor)
+        E -->|Biomechanical Dynamics| F
+        E -->|Forensic Spectrograms| F
+    end
     
-    %% 4. Inference
-    F -->|Cross-Channel Attention| G[Inference Engine]
-    G -->|EfficientNet-B0| H[INT8 ONNX Runtime]
-    H -->|Output| I{Synthetic Probability Index}
+    subgraph Layer4 [4. Inference Engine]
+        F -->|Cross-Channel Attention| G[PhysioSpecNet]
+        G -->|EfficientNet-B0| H[INT8 ONNX Runtime]
+        H -->|Evaluation| I{Synthetic Probability Index}
+    end
     
-    %% 5 & 6. Policy & Telemetry
-    I -->|SPI < 0.30| J[HUD: AUTHENTIC]
-    I -->|0.30 <= SPI < 0.70| K[HUD: MONITORING ANOMALY]
-    I -->|SPI >= 0.70| L[HUD: SYNTHETIC DETECTED]
-    L -->|API Trigger| M[Automated Mitigation / Call Severance]
+    subgraph Layer5 [5. Policy Engine and HUD]
+        I -->|SPI < 0.30| J[HUD: AUTHENTIC]
+        I -->|0.30 <= SPI < 0.70| K[HUD: MONITORING ANOMALY]
+        I -->|SPI >= 0.70| L[HUD: SYNTHETIC DETECTED]
+        L -->|REST API Trigger| M[Automated Mitigation / Call Severance]
+    end
 ```
 
 ### 1. Ingestion Layer (Telephony and Streaming)
