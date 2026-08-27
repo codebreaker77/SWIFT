@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWIFT // Real-Time Forensic Audio Defense</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="cyber-theme">
+    <div class="ambient-glow"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="app-layout">
+        <!-- Top Navigation Header -->
+        <header class="cyber-header glass-card">
+            <div class="brand-cluster">
+                <div class="shield-logo">
+                    <svg viewBox="0 0 24 24" class="svg-icon-logo" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M12 2L3 7V12C3 17.5 7 21.5 12 23C17 21.5 21 17.5 21 12V7L12 2Z" />
+                        <path d="M12 6V18" stroke-dasharray="2 2"/>
+                        <circle cx="12" cy="12" r="3" fill="currentColor" fill-opacity="0.3"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <div class="brand-title">
+                        <span class="highlight">SWIFT</span>
+                        <span class="badge-tag">FORENSIC v2.4</span>
+                    </div>
+                    <span class="brand-sub">SPEECH &amp; WAVEFORM INVESTIGATIVE FORENSIC TOOLKIT</span>
+                </div>
+            </div>
+
+            <!-- Header System Telemetry -->
+            <div class="header-telemetry">
+                <div class="telemetry-chip">
+                    <span class="chip-label">CORE ENGINE</span>
+                    <strong class="chip-val text-cyan">PHYSIOSPECNET</strong>
+                </div>
+                <div class="telemetry-chip">
+                    <span class="chip-label">LATENCY BUDGET</span>
+                    <strong class="chip-val text-emerald">&lt; 35ms REALTIME</strong>
+                </div>
+                <div class="telemetry-chip">
+                    <span class="chip-label">CARRIER CODEC</span>
+                    <strong class="chip-val">G.711 µ-LAW 8k / 16k</strong>
+                </div>
+                <div class="status-indicator" id="statusPill">
+                    <span class="status-dot"></span>
+                    <span id="statusText">STANDBY</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Forensic Dashboard Grid -->
+        <main class="dashboard-grid">
+            
+            <!-- Left Column: Master Ingestion & Audio Oscilloscope -->
+            <section class="forensic-column main-stream glass-card">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <svg viewBox="0 0 24 24" class="svg-panel-icon" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                        <h3>LIVE INGESTION FEED &amp; WAVEFORM MONITOR</h3>
+                    </div>
+                    <div class="stream-rate-badge" id="waveStatus">16,000 Hz • 16-Bit Mono</div>
+                </div>
+
+                <!-- Interactive Oscilloscope / Waveform HUD -->
+                <div class="visualizer-hud">
+                    <canvas id="waveformCanvas"></canvas>
+                    <div class="hud-reticle top-left"></div>
+                    <div class="hud-reticle top-right"></div>
+                    <div class="hud-reticle bottom-left"></div>
+                    <div class="hud-reticle bottom-right"></div>
+                    <div class="hud-scanline"></div>
+                    <div class="hud-scale-axis">
+                        <span>+1.0</span>
+                        <span>0.0</span>
+                        <span>-1.0</span>
+                    </div>
+                </div>
+
+                <!-- Big Activation Trigger Button -->
+                <div class="trigger-container">
+                    <button class="cyber-mic-btn" id="btnMic">
+                        <div class="btn-ambient-ring"></div>
+                        <div class="btn-inner">
+                            <svg viewBox="0 0 24 24" class="mic-svg" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="22"/>
+                            </svg>
+                            <span class="btn-text" id="micLabel">ARM REAL-TIME STREAM DETECTOR</span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Real-Time Threat Verdict HUD Banner -->
+                <div class="verdict-banner-hud">
+                    <div class="threat-badge idle" id="resultBadge">
+                        <div class="threat-icon-box" id="resultIconBox">
+                            <svg viewBox="0 0 24 24" class="verdict-svg" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                        </div>
+                        <div class="threat-content">
+                            <span class="threat-sub">FORENSIC VERDICT</span>
+                            <h2 class="threat-title" id="resultText">SYSTEM ARMED • AWAITING AUDIO</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Telemetry Stats Strip -->
+                <div class="telemetry-stats-strip">
+                    <div class="stat-card">
+                        <span class="stat-lbl">SPECTRAL EXTRACTION</span>
+                        <strong class="stat-val" id="latFeat">0.0 ms</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-lbl">MODEL INFERENCE</span>
+                        <strong class="stat-val" id="latInfer">0.0 ms</strong>
+                    </div>
+                    <div class="stat-card highlight">
+                        <span class="stat-lbl">ROUND-TRIP LATENCY</span>
+                        <strong class="stat-val text-cyan" id="latTotal">0.0 ms</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Column: Forensic Gauge & Multi-Channel Diagnostics -->
+            <section class="forensic-column diagnostics-column glass-card">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <svg viewBox="0 0 24 24" class="svg-panel-icon text-cyan" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                        <h3>FORENSIC PROBABILITY &amp; GAUGES</h3>
+                    </div>
+                </div>
+
+                <!-- Radial Arc Gauge HUD -->
+                <div class="radial-gauge-container">
+                    <div class="radial-gauge-wrap">
+                        <svg viewBox="0 0 200 200" class="radial-gauge-svg">
+                            <circle cx="100" cy="100" r="80" class="gauge-bg-circle"/>
+                            <circle cx="100" cy="100" r="80" class="gauge-progress-circle" id="radialCircle"/>
+                        </svg>
+                        <div class="gauge-center-data">
+                            <span class="gauge-center-title">AI SPOOF INDEX</span>
+                            <span class="gauge-center-value" id="riskVal">0.0%</span>
+                            <span class="gauge-center-sub" id="gaugeSubText">SAFE BASELINE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dual Coherence Bars -->
+                <div class="coherence-bars-wrapper">
+                    <div class="coherence-item">
+                        <div class="bar-meta">
+                            <span>AUTHENTIC HUMAN SPEECH</span>
+                            <strong class="text-emerald" id="pReal">100.0%</strong>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill emerald" id="fillReal" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="coherence-item">
+                        <div class="bar-meta">
+                            <span>SYNTHETIC / NEURAL VOCODER</span>
+                            <strong class="text-crimson" id="pFake">0.0%</strong>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill crimson" id="fillFake" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sensitivity Threshold Slider -->
+                <div class="threshold-hud-box">
+                    <div class="thresh-meta">
+                        <div class="thresh-title">
+                            <span>DECISION BOUNDARY</span>
+                            <strong class="thresh-digit text-cyan" id="threshVal">0.4500</strong>
+                        </div>
+                        <span class="thresh-desc">Optimal Cross-Entropy EER Cutoff</span>
+                    </div>
+                    <input type="range" id="threshSlider" min="0.10" max="0.90" step="0.02" value="0.45" class="cyber-slider">
+                    <div class="slider-scale-ticks">
+                        <span>STRICT (0.10)</span>
+                        <span>BALANCED (0.45)</span>
+                        <span>HIGH-PRECISION (0.90)</span>
+                    </div>
+                </div>
+
+                <!-- 6-Channel Feature Decomposition Breakdown -->
+                <div class="decomposition-section">
+                    <div class="decomp-header">
+                        <span>6-CHANNEL FORENSIC ATTENTION MAP</span>
+                    </div>
+                    <div class="channel-bars-list">
+                        <div class="channel-row">
+                            <span class="ch-name">CH 01 • LFCC Filterbank</span>
+                            <div class="ch-track"><div class="ch-fill" style="width: 88%;"></div></div>
+                        </div>
+                        <div class="channel-row">
+                            <span class="ch-name">CH 02 • F0 Pitch Contour</span>
+                            <div class="ch-track"><div class="ch-fill" style="width: 64%;"></div></div>
+                        </div>
+                        <div class="channel-row">
+                            <span class="ch-name">CH 03 • Formant Tracks (F1-F3)</span>
+                            <div class="ch-track"><div class="ch-fill" style="width: 72%;"></div></div>
+                        </div>
+                        <div class="channel-row">
+                            <span class="ch-name">CH 04 • Harmonic-to-Noise (HNR)</span>
+                            <div class="ch-track"><div class="ch-fill" style="width: 58%;"></div></div>
+                        </div>
+                        <div class="channel-row">
+                            <span class="ch-name">CH 05 • Spectral Flux / Jitter</span>
+                            <div class="ch-track"><div class="ch-fill" style="width: 80%;"></div></div>
+                        </div>
+                        <div class="channel-row">
+                            <span class="ch-name">CH 06 • Instantaneous Phase</span>
+                            <div class="ch-track"><div class="ch-fill" style="width: 92%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Dataset Sample Lab Section -->
+        <section class="sample-lab-section glass-card">
+            <div class="panel-header">
+                <div class="panel-title-wrap">
+                    <svg viewBox="0 0 24 24" class="svg-panel-icon" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+                        <line x1="7" y1="2" x2="7" y2="22"/>
+                        <line x1="17" y1="2" x2="17" y2="22"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                    </svg>
+                    <h3>BENCHMARK EVALUATION LAB • HUGGING FACE AUDIO SAMPLES</h3>
+                </div>
+                <span class="section-sub">Cross-validate against LibriSpeech &amp; Neural TTS (VITS Vocoders)</span>
+            </div>
+
+            <div class="samples-grid">
+                <!-- HF Real 1 -->
+                <div class="sample-card real-card">
+                    <div class="card-status-bar">
+                        <span class="card-pill pill-real">LIBRISPEECH HUMAN #1</span>
+                        <span class="spec-dim">16kHz PCM</span>
+                    </div>
+                    <audio controls src="/samples/hf_real_1.wav" class="cyber-audio-player"></audio>
+                    <button class="btn-cyber-scan" data-sample="hf_real_1.wav">
+                        <span>EXECUTE FORENSIC SCAN</span>
+                    </button>
+                    <div class="analysis-output" id="out_hf_real_1.wav"></div>
+                    <div class="spec-image-wrap">
+                        <img src="/samples/hf_real_1_spec.png" alt="Spectrogram" class="spec-img">
+                    </div>
+                </div>
+
+                <!-- HF Real 2 -->
+                <div class="sample-card real-card">
+                    <div class="card-status-bar">
+                        <span class="card-pill pill-real">LIBRISPEECH HUMAN #2</span>
+                        <span class="spec-dim">16kHz PCM</span>
+                    </div>
+                    <audio controls src="/samples/hf_real_2.wav" class="cyber-audio-player"></audio>
+                    <button class="btn-cyber-scan" data-sample="hf_real_2.wav">
+                        <span>EXECUTE FORENSIC SCAN</span>
+                    </button>
+                    <div class="analysis-output" id="out_hf_real_2.wav"></div>
+                    <div class="spec-image-wrap">
+                        <img src="/samples/hf_real_2_spec.png" alt="Spectrogram" class="spec-img">
+                    </div>
+                </div>
+
+                <!-- HF Real 3 -->
+                <div class="sample-card real-card">
+                    <div class="card-status-bar">
+                        <span class="card-pill pill-real">LIBRISPEECH HUMAN #3</span>
+                        <span class="spec-dim">16kHz PCM</span>
+                    </div>
+                    <audio controls src="/samples/hf_real_3.wav" class="cyber-audio-player"></audio>
+                    <button class="btn-cyber-scan" data-sample="hf_real_3.wav">
+                        <span>EXECUTE FORENSIC SCAN</span>
+                    </button>
+                    <div class="analysis-output" id="out_hf_real_3.wav"></div>
+                    <div class="spec-image-wrap">
+                        <img src="/samples/hf_real_3_spec.png" alt="Spectrogram" class="spec-img">
+                    </div>
+                </div>
+
+                <!-- Real Human 1 -->
+                <div class="sample-card real-card">
+                    <div class="card-status-bar">
+                        <span class="card-pill pill-real">CONVERSATIONAL HUMAN</span>
+                        <span class="spec-dim">STUDIO VOICE</span>
+                    </div>
+                    <audio controls src="/samples/real_human_1.wav" class="cyber-audio-player"></audio>
+                    <button class="btn-cyber-scan" data-sample="real_human_1.wav">
+                        <span>EXECUTE FORENSIC SCAN</span>
+                    </button>
+                    <div class="analysis-output" id="out_real_human_1.wav"></div>
+                    <div class="spec-image-wrap">
+                        <img src="/samples/real_human_1_spec.png" alt="Spectrogram" class="spec-img">
+                    </div>
+                </div>
+
+                <!-- Real Human 2 -->
+                <div class="sample-card real-card">
+                    <div class="card-status-bar">
+                        <span class="card-pill pill-real">ACOUSTIC HUMAN SPEECH</span>
+                        <span class="spec-dim">NATURAL CADENCE</span>
+                    </div>
+                    <audio controls src="/samples/real_human_2.wav" class="cyber-audio-player"></audio>
+                    <button class="btn-cyber-scan" data-sample="real_human_2.wav">
+                        <span>EXECUTE FORENSIC SCAN</span>
+                    </button>
+                    <div class="analysis-output" id="out_real_human_2.wav"></div>
+                    <div class="spec-image-wrap">
+                        <img src="/samples/real_human_2_spec.png" alt="Spectrogram" class="spec-img">
+                    </div>
+                </div>
+
+                <!-- HF Spoof 1 -->
+                <div class="sample-card spoof-card">
+                    <div class="card-status-bar">
+                        <span class="card-pill pill-spoof">AI DEEPFAKE #1 (VITS)</span>
+                        <span class="spec-dim">MMS-TTS VOCODER</span>
+                    </div>
+                    <audio controls src="/samples/hf_spoof_1.wav" class="cyber-audio-player"></audio>
+                    <button class="btn-cyber-scan" data-sample="hf_spoof_1.wav">
+                        <span>EXECUTE FORENSIC SCAN</span>
+                    </button>
+                    <div class="analysis-output" id="out_hf_spoof_1.wav"></div>
+                    <div class="spec-image-wrap">
+                        <img src="/samples/hf_spoof_1_spec.png" alt="Spectrogram" class="spec-img">
+                    </div>
+                </div>
+
+                <!-- HF Spoof 2 -->
+                <div class="sample-card spoof-card">
+                    <div class="card-status-bar">
+                        <span class="card-pill pill-spoof">AI DEEPFAKE #2 (VITS)</span>
+                        <span class="spec-dim">MMS-TTS VOCODER</span>
+                    </div>
+                    <audio controls src="/samples/hf_spoof_2.wav" class="cyber-audio-player"></audio>
+                    <button class="btn-cyber-scan" data-sample="hf_spoof_2.wav">
+                        <span>EXECUTE FORENSIC SCAN</span>
+                    </button>
+                    <div class="analysis-output" id="out_hf_spoof_2.wav"></div>
+                    <div class="spec-image-wrap">
+                        <img src="/samples/hf_spoof_2_spec.png" alt="Spectrogram" class="spec-img">
+                    </div>
+                </div>
+
+                <!-- HF Spoof 3 -->
+                <div class="sample-card spoof-card">
+                    <div class="card-status-bar">
+                        <span class="card-pill pill-spoof">AI DEEPFAKE #3 (VITS)</span>
+                        <span class="spec-dim">MMS-TTS VOCODER</span>
+                    </div>
+                    <audio controls src="/samples/hf_spoof_3.wav" class="cyber-audio-player"></audio>
+                    <button class="btn-cyber-scan" data-sample="hf_spoof_3.wav">
+                        <span>EXECUTE FORENSIC SCAN</span>
+                    </button>
+                    <div class="analysis-output" id="out_hf_spoof_3.wav"></div>
+                    <div class="spec-image-wrap">
+                        <img src="/samples/hf_spoof_3_spec.png" alt="Spectrogram" class="spec-img">
+                    </div>
+                </div>
+
+                <!-- AI Neural TTS 1 -->
+                <div class="sample-card spoof-card">
+                    <div class="card-status-bar">
+                        <span class="card-pill pill-spoof">NEURAL VOICE CLONE</span>
+                        <span class="spec-dim">ELEVENLABS / FASTSPEECH</span>
+                    </div>
+                    <audio controls src="/samples/ai_neural_tts_1.wav" class="cyber-audio-player"></audio>
+                    <button class="btn-cyber-scan" data-sample="ai_neural_tts_1.wav">
+                        <span>EXECUTE FORENSIC SCAN</span>
+                    </button>
+                    <div class="analysis-output" id="out_ai_neural_tts_1.wav"></div>
+                    <div class="spec-image-wrap">
+                        <img src="/samples/ai_neural_tts_1_spec.png" alt="Spectrogram" class="spec-img">
+                    </div>
+                </div>
+
+                <!-- AI Voice Conversion 1 -->
+                <div class="sample-card spoof-card">
+                    <div class="card-status-bar">
+                        <span class="card-pill pill-spoof">RVC VOICE CONVERSION</span>
+                        <span class="spec-dim">LATENT IMPOSTER</span>
+                    </div>
+                    <audio controls src="/samples/ai_voice_conversion_1.wav" class="cyber-audio-player"></audio>
+                    <button class="btn-cyber-scan" data-sample="ai_voice_conversion_1.wav">
+                        <span>EXECUTE FORENSIC SCAN</span>
+                    </button>
+                    <div class="analysis-output" id="out_ai_voice_conversion_1.wav"></div>
+                    <div class="spec-image-wrap">
+                        <img src="/samples/ai_voice_conversion_1_spec.png" alt="Spectrogram" class="spec-img">
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Floating Twilio Conference Call Shield Widget -->
+    <div class="twilio-floating-container" id="twilioContainer">
+        <!-- Holographic FAB -->
+        <button class="twilio-fab" id="twilioFabBtn" title="Toggle SWIFT In-Call Shield">
+            <span class="fab-radar"></span>
+            <div class="fab-inner">
+                <svg viewBox="0 0 24 24" class="fab-svg" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L3 7v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V7l-9-5z"/>
+                    <path d="M12 8v8m-4-4h8"/>
+                </svg>
+                <span class="fab-title">SWIFT CALL SHIELD</span>
+            </div>
+        </button>
+
+        <!-- Floating Telephony Control Center -->
+        <div class="twilio-card glass-card" id="twilioCard">
+            <div class="twilio-card-header">
+                <div class="tw-brand">
+                    <span class="tw-dot" id="twilioCallDot"></span>
+                    <span class="tw-title">TWILIO TELEPHONY INGESTION</span>
+                </div>
+                <button class="tw-close-btn" id="twilioCloseBtn">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- In-Call Status Banner -->
+            <div class="tw-status-banner" id="twilioStatusBanner">
+                <div class="tw-banner-left">
+                    <span class="tw-live-label" id="twilioBannerText">STANDBY • READY TO MONITOR</span>
+                </div>
+                <span class="tw-codec-pill">G.711 µ-law 8kHz</span>
+            </div>
+
+            <!-- Telemetry Matrix -->
+            <div class="tw-telemetry-grid">
+                <div class="tw-cell">
+                    <span class="tw-cell-label">CONFERENCE BRIDGE</span>
+                    <strong class="tw-cell-val" id="twilioConfRoom">SWIFT-Secure-Room</strong>
+                </div>
+                <div class="tw-cell">
+                    <span class="tw-cell-label">STREAM SID</span>
+                    <strong class="tw-cell-val text-cyan" id="twilioStreamSid">MZ--STANDBY--</strong>
+                </div>
+                <div class="tw-cell">
+                    <span class="tw-cell-label">LATENCY</span>
+                    <strong class="tw-cell-val text-emerald" id="twilioLatency">0.0 ms</strong>
+                </div>
+                <div class="tw-cell">
+                    <span class="tw-cell-label">TELEPHONY FRAMES</span>
+                    <strong class="tw-cell-val" id="twilioPackets">0 pkts</strong>
+                </div>
+            </div>
+
+            <!-- Real-Time Telephony Threat Verdict -->
+            <div class="tw-verdict-box">
+                <div class="tw-verdict-pill idle" id="twilioVerdictPill">
+                    <svg viewBox="0 0 24 24" class="tw-verdict-icon" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    <span id="twilioVerdictText">NO ACTIVE CALL INGESTION</span>
+                </div>
+                <div class="tw-meter-track">
+                    <div class="tw-meter-fill" id="twilioMeterFill"></div>
+                </div>
+                <div class="tw-prob-row">
+                    <span>Authentic: <b id="twilioRealPct">--</b></span>
+                    <span>AI Spoof: <b id="twilioFakePct">--</b></span>
+                </div>
+            </div>
+
+            <!-- Call Controls & Caller Simulator -->
+            <div class="tw-controls-group">
+                <label class="tw-input-label">TEST INGESTION WITH TELEPHONY CALLER:</label>
+                <div class="tw-select-wrapper">
+                    <select id="twilioCallerSelect" class="tw-select">
+                        <option value="hf_real_1.wav">Real Human Caller (LibriSpeech HF)</option>
+                        <option value="real_human_1.wav">Real Human Caller (Clean Speech)</option>
+                        <option value="hf_spoof_1.wav">AI Voice Clone (MMS-TTS Vocoder)</option>
+                        <option value="ai_neural_tts_1.wav">AI Deepfake (Neural TTS VITS)</option>
+                        <option value="gptlive_spoof_0.wav">Synthetic Speech (GPT-4o Voice)</option>
+                    </select>
+                </div>
+
+                <div class="tw-btn-row">
+                    <button class="btn-tw-primary" id="btnStartTwilioStream">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        STREAM TO CONFERENCE BRIDGE
+                    </button>
+                    <button class="btn-tw-stop" id="btnStopTwilioStream" style="display:none;">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                            <rect x="6" y="6" width="12" height="12"/>
+                        </svg>
+                        TERMINATE CALL STREAM
+                    </button>
+                </div>
+
+                <!-- TwiML Webhook Quick Copy -->
+                <div class="tw-webhook-box">
+                    <div class="tw-webhook-meta">
+                        <span>TWILIO VOICE WEBHOOK (TWIML)</span>
+                        <button class="btn-tw-copy" id="btnCopyTwiml">COPY TWIML</button>
+                    </div>
+                    <code class="tw-code-snippet">/twilio/voice</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+{
+  "accuracy": 1.0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1_score": 1.0,
+  "tp": 24,
+  "fp": 0,
+  "tn": 114,
+  "fn": 0,
+  "eer": 0.0,
+  "optimal_threshold": 0.07609343528747559,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.49461959151254187,
+      "eval_accuracy": 0.9782608695652174,
+      "dev_eer": 0.02357456140350877,
+      "threshold": 0.5661083459854126
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.27711751581966015,
+      "eval_accuracy": 0.9130434782608695,
+      "dev_eer": 0.08333333333333333,
+      "threshold": 0.025255441665649414
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.18631278863851575,
+      "eval_accuracy": 0.9855072463768116,
+      "dev_eer": 0.0043859649122807015,
+      "threshold": 0.41341954469680786
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.17103429117064545,
+      "eval_accuracy": 1.0,
+      "dev_eer": 0.0,
+      "threshold": 0.048621416091918945
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.15146877800208935,
+      "eval_accuracy": 0.9927536231884058,
+      "dev_eer": 0.0,
+      "threshold": 0.9358649849891663
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.1502411110677581,
+      "eval_accuracy": 0.9782608695652174,
+      "dev_eer": 0.02357456140350877,
+      "threshold": 0.04686546325683594
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.14116564727779748,
+      "eval_accuracy": 1.0,
+      "dev_eer": 0.0,
+      "threshold": 0.07609343528747559
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.1479721462381059,
+      "eval_accuracy": 0.9927536231884058,
+      "dev_eer": 0.0,
+      "threshold": 0.076454758644104
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.12539217696673627,
+      "eval_accuracy": 0.9927536231884058,
+      "dev_eer": 0.0,
+      "threshold": 0.033396124839782715
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.12493182135664899,
+      "eval_accuracy": 0.9927536231884058,
+      "dev_eer": 0.0,
+      "threshold": 0.04908037185668945
+    }
+  ],
+  "model_name": "PhysioSpecNet (6-Channel Cross-Attention)",
+  "device": "cuda"
+}
