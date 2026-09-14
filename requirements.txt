@@ -9,3 +9,9 @@ onnx>=1.14.0
 onnxruntime>=1.15.0
 matplotlib>=3.7.0
 timm>=0.9.0
+# Twilio & API Server
+twilio>=9.0.0
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+python-dotenv>=1.0.0
+websockets>=12.0
