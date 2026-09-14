@@ -1,13 +1,3 @@
-"""
-SWIFT Twilio Integration Server
-FastAPI + Uvicorn server that handles:
-  - POST /twilio/inbound   — TwiML webhook: instructs Twilio to fork audio to this server
-  - WS   /twilio/stream    — Twilio Media Streams WebSocket: ingests live 8kHz μ-law audio
-  - WS   /swift/telemetry/{session_id} — Mobile app real-time SPI telemetry channel
-  - GET  /twilio/verdict/{call_sid}    — REST endpoint for polling call verdict
-  - POST /twilio/action/{call_sid}     — Trigger mitigation (warn / sever) via Twilio REST API
-"""
-
 import os
 import asyncio
 import base64
@@ -21,23 +11,49 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPExcept
 from fastapi.responses import Response, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
-from twilio.rest import Client as TwilioClient
-from twilio.twiml.voice_response import VoiceResponse, Start, Stream, Pause
 
-# ---- Load environment and model ----
+# ---- Load environment ----
 load_dotenv()
 
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
-TWILIO_AUTH_TOKEN  = os.getenv("TWILIO_AUTH_TOKEN", "")
+PROVIDER = os.getenv("PROVIDER", "signalwire").lower()
+
+# Twilio credentials
+TWILIO_ACCOUNT_SID  = os.getenv("TWILIO_ACCOUNT_SID", "")
+TWILIO_AUTH_TOKEN   = os.getenv("TWILIO_AUTH_TOKEN", "")
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER", "")
-SWIFT_PUBLIC_URL   = os.getenv("SWIFT_PUBLIC_URL", "https://YOUR-NGROK-URL.ngrok-free.app")
+
+# SignalWire credentials
+SW_SPACE        = os.getenv("SIGNALWIRE_SPACE", "")
+SW_PROJECT_ID   = os.getenv("SIGNALWIRE_PROJECT_ID", "")
+SW_API_TOKEN    = os.getenv("SIGNALWIRE_API_TOKEN", "")
+SW_PHONE_NUMBER = os.getenv("SIGNALWIRE_PHONE_NUMBER", "")
+
+SWIFT_PUBLIC_URL = os.getenv("SWIFT_PUBLIC_URL", "https://YOUR-NGROK-URL.ngrok-free.app")
 
 SPI_THREAT_THRESHOLD   = float(os.getenv("SPI_THREAT_THRESHOLD", "0.70"))
 SPI_ELEVATED_THRESHOLD = float(os.getenv("SPI_ELEVATED_THRESHOLD", "0.30"))
 INFERENCE_HOP_MS       = int(os.getenv("INFERENCE_HOP_MS", "500"))
-BUFFER_DURATION_S      = float(os.getenv("BUFFER_DURATION_S", "2.0"))
 
-twilio_client = TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_SID else None
+# ---- Build telephony client (Twilio or SignalWire) ----
+telephony_client = None
+active_phone_number = ""
+
+if PROVIDER == "signalwire" and SW_PROJECT_ID:
+    from signalwire.rest import Client as SWClient
+    telephony_client = SWClient(
+        SW_PROJECT_ID,
+        SW_API_TOKEN,
+        signalwire_space_url=SW_SPACE,
+    )
+    active_phone_number = SW_PHONE_NUMBER
+    print(f"[SWIFT] Provider: SignalWire | Number: {active_phone_number}")
+elif PROVIDER == "twilio" and TWILIO_ACCOUNT_SID:
+    from twilio.rest import Client as TwilioClient
+    telephony_client = TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    active_phone_number = TWILIO_PHONE_NUMBER
+    print(f"[SWIFT] Provider: Twilio | Number: {active_phone_number}")
+else:
+    print(f"[SWIFT] WARNING: No telephony provider configured. Mitigation API will be disabled.")
 
 # ---- Import SWIFT internals ----
 from src.config import AudioConfig, LFCCConfig, ModelConfig, CHECKPOINT_DIR
@@ -325,22 +341,20 @@ async def trigger_action(call_sid: str, request: Request):
 
 
 async def _trigger_mitigation(call_sid: str, action: str = "warn") -> dict:
-    """Execute Twilio REST API mitigation on an active call."""
-    if not twilio_client:
-        return {"status": "error", "detail": "Twilio client not configured. Check .env credentials."}
+    """Execute REST API mitigation on an active call via the configured provider."""
+    if not telephony_client:
+        return {"status": "error", "detail": "No telephony provider configured. Check PROVIDER in .env."}
 
     try:
         if action == "warn":
-            # Inject an audio warning into the user's earpiece
-            twilio_client.calls(call_sid).update(
+            telephony_client.calls(call_sid).update(
                 twiml='<Response><Say voice="Polly.Matthew">Warning. Synthetic voice detected on this call.</Say></Response>'
             )
             print(f"[SWIFT] Mitigation: Whisper warning injected into CallSid={call_sid}")
             return {"status": "ok", "action": "warn", "call_sid": call_sid}
 
         elif action == "sever":
-            # Hard terminate the call
-            twilio_client.calls(call_sid).update(status="completed")
+            telephony_client.calls(call_sid).update(status="completed")
             print(f"[SWIFT] Mitigation: Call severed for CallSid={call_sid}")
             return {"status": "ok", "action": "sever", "call_sid": call_sid}
 
@@ -361,8 +375,10 @@ async def health():
     return {
         "status": "ok",
         "device": str(DEVICE),
+        "provider": PROVIDER,
+        "active_number": active_phone_number,
+        "telephony_configured": telephony_client is not None,
         "active_sessions": len(session_manager.all_sessions()),
-        "twilio_configured": bool(TWILIO_ACCOUNT_SID),
         "public_url": SWIFT_PUBLIC_URL,
         "spi_thresholds": {
             "elevated": SPI_ELEVATED_THRESHOLD,
@@ -389,3 +405,4 @@ async def list_sessions():
             for s in sessions.values()
         ],
     }
+
