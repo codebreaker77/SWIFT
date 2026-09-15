@@ -71,6 +71,13 @@ print("[SWIFT] Model ready.")
 app = FastAPI(title="SWIFT Twilio Inference Server", version="2.0.0")
 app.mount("/public", StaticFiles(directory="public"), name="public")
 
+from fastapi.responses import FileResponse
+
+@app.get("/")
+@app.get("/hud")
+async def get_mobile_hud():
+    return FileResponse("public/mobile.html")
+
 
 # =============================================================================
 # Utility: μ-law decode + resample
@@ -115,14 +122,19 @@ def determine_status(spi: float) -> str:
 @app.post("/twilio/inbound")
 async def twilio_inbound(request: Request):
     """
-    TwiML webhook — instructs Twilio to:
+    TwiML webhook — instructs SignalWire/Twilio to:
       1. Start a Media Stream (fork audio to our WebSocket)
       2. Hold the line open for 60 seconds while we analyze
     """
-    form = await request.form()
-    call_sid = form.get("CallSid", "")
-    from_number = form.get("From", "")
-    print(f"[SWIFT] Inbound call: CallSid={call_sid}, From={from_number}")
+    try:
+        form = await request.form()
+        call_sid = form.get("CallSid", "")
+        from_number = form.get("From", "")
+    except Exception:
+        body = await request.body()
+        call_sid = "inbound_call"
+        from_number = "unknown"
+    print(f"[SWIFT] Inbound call received! CallSid={call_sid}, From={from_number}")
 
     stream_url = f"{SWIFT_PUBLIC_URL.replace('https://', 'wss://')}/twilio/stream"
 
@@ -135,6 +147,11 @@ async def twilio_inbound(request: Request):
 </Response>"""
 
     return Response(content=twiml, media_type="text/xml")
+
+
+@app.post("/twilio/status_callback")
+async def twilio_status_callback(request: Request):
+    return Response(content="OK", media_type="text/plain")
 
 
 # =============================================================================
@@ -241,7 +258,7 @@ async def twilio_stream(websocket: WebSocket):
                     await session_manager.broadcast_verdict(session)
 
                     # Automated mitigation on THREAT
-                    if session.status == "threat" and twilio_client and session.call_sid:
+                    if session.status == "threat" and telephony_client and session.call_sid:
                         await _trigger_mitigation(session.call_sid, action="warn")
 
             # --- Twilio Stop event: call ended ---

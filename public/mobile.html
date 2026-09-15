@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SWIFT Mobile Live HUD</title>
+    <style>
+        :root {
+            --bg-color: #0F0E17;
+            --card-bg: #1A192B;
+            --primary: #6C5CE7;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --text: #FFFFFF;
+            --text-secondary: #9E9EB2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px 16px;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .connection-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: currentColor;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .main-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card-bg);
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 16px 0;
+        }
+
+        svg.gauge-ring {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        circle.meter-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.06);
+            stroke-width: 14;
+        }
+
+        circle.meter-progress {
+            fill: none;
+            stroke: var(--success);
+            stroke-width: 14;
+            stroke-linecap: round;
+            stroke-dasharray: 565.48;
+            stroke-dashoffset: 565.48;
+            transition: stroke-dashoffset 0.4s ease, stroke 0.4s ease;
+        }
+
+        .gauge-inner {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .risk-score {
+            font-size: 48px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+
+        .risk-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            margin-top: 12px;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .status-message {
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .call-details-card {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .detail-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+        }
+
+        .detail-value {
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .action-button-container {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 18px;
+            font-size: 15px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.1s ease, filter 0.2s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-dial {
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            box-shadow: 0 8px 20px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn-sever {
+            background: var(--danger);
+            color: white;
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🛡️ SWIFT Guard</h1>
+        <div class="connection-badge" id="connStatus">
+            <span class="pulse-dot"></span>
+            <span id="connText">CONNECTING</span>
+        </div>
+    </div>
+
+    <div class="main-card">
+        <div class="gauge-container">
+            <svg class="gauge-ring" viewBox="0 0 200 200">
+                <circle class="meter-bg" cx="100" cy="100" r="90"></circle>
+                <circle class="meter-progress" id="progressCircle" cx="100" cy="100" r="90"></circle>
+            </svg>
+            <div class="gauge-inner">
+                <div class="risk-score" id="riskValue">0%</div>
+                <div class="risk-label">Deepfake SPI</div>
+            </div>
+        </div>
+
+        <div class="status-badge" id="statusBadge">AUTHENTIC HUMAN</div>
+        <div class="status-message" id="statusDesc">Awaiting cellular call audio...</div>
+    </div>
+
+    <div class="call-details-card">
+        <div class="detail-row">
+            <span class="detail-label">Bridge Line:</span>
+            <span class="detail-value">+1 (204) 900-0957</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Active Call SID:</span>
+            <span class="detail-value" id="callSidDisplay">Waiting...</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">GPU Latency:</span>
+            <span class="detail-value" id="latencyDisplay">0 ms</span>
+        </div>
+    </div>
+
+    <div class="action-button-container">
+        <a href="tel:+12049000957" class="btn btn-dial">
+            📞 Dial SWIFT Bridge Line
+        </a>
+        <button class="btn btn-sever" id="severBtn" onclick="severCall()">
+            🚨 SEVER CALL (DROP SCAMMER)
+        </button>
+    </div>
+
+    <script>
+        const wsScheme = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsScheme}//${window.location.host}/swift/telemetry/mobile_hud_client`;
+
+        const connText = document.getElementById('connText');
+        const connStatus = document.getElementById('connStatus');
+        const riskValue = document.getElementById('riskValue');
+        const progressCircle = document.getElementById('progressCircle');
+        const statusBadge = document.getElementById('statusBadge');
+        const statusDesc = document.getElementById('statusDesc');
+        const callSidDisplay = document.getElementById('callSidDisplay');
+        const latencyDisplay = document.getElementById('latencyDisplay');
+        const severBtn = document.getElementById('severBtn');
+
+        const totalCircumference = 2 * Math.PI * 90; // 565.48
+
+        let activeCallSid = "";
+        let ws;
+
+        function connectWS() {
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                connText.innerText = "LIVE GUARD";
+                connStatus.style.color = "var(--success)";
+                connStatus.style.borderColor = "var(--success)";
+                connStatus.style.background = "rgba(16, 185, 129, 0.15)";
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    const spi = data.spi || 0.0;
+                    const percent = Math.min(100, Math.round(spi * 100));
+                    const status = data.status || 'authentic';
+                    activeCallSid = data.call_sid || activeCallSid;
+
+                    riskValue.innerText = `${percent}%`;
+                    callSidDisplay.innerText = activeCallSid ? activeCallSid.substring(0, 16) + '...' : 'Live Stream';
+
+                    if (data.metrics && data.metrics.total_latency_ms) {
+                        latencyDisplay.innerText = `${Math.round(data.metrics.total_latency_ms)} ms`;
+                    }
+
+                    // Update Circle Offset
+                    const offset = totalCircumference - (percent / 100 * totalCircumference);
+                    progressCircle.style.strokeDashoffset = offset;
+
+                    // Status coloring
+                    if (status === 'threat' || spi >= 0.70) {
+                        progressCircle.style.stroke = "var(--danger)";
+                        statusBadge.innerText = "CRITICAL: SYNTHETIC AI VOICE DETECTED";
+                        statusBadge.style.color = "var(--danger)";
+                        statusBadge.style.borderColor = "var(--danger)";
+                        statusBadge.style.background = "rgba(239, 68, 68, 0.2)";
+                        statusDesc.innerText = "High-confidence deepfake voice detected on call!";
+                        severBtn.style.display = "flex";
+                    } else if (status === 'elevated' || spi >= 0.30) {
+                        progressCircle.style.stroke = "var(--warning)";
+                        statusBadge.innerText = "MONITORING ANOMALY";
+                        statusBadge.style.color = "var(--warning)";
+                        statusBadge.style.borderColor = "var(--warning)";
+                        statusBadge.style.background = "rgba(245, 158, 11, 0.2)";
+                        statusDesc.innerText = "Acoustic distortion detected • Evaluating voice tract...";
+                        severBtn.style.display = "none";
+                    } else {
+                        progressCircle.style.stroke = "var(--success)";
+                        statusBadge.innerText = "AUTHENTIC HUMAN VOICE";
+                        statusBadge.style.color = "var(--success)";
+                        statusBadge.style.borderColor = "var(--success)";
+                        statusBadge.style.background = "rgba(16, 185, 129, 0.15)";
+                        statusDesc.innerText = "Physiological vocal folds & harmonics verified";
+                        severBtn.style.display = "none";
+                    }
+                } catch (e) {
+                    console.error("WS Parse Error", e);
+                }
+            };
+
+            ws.onclose = () => {
+                connText.innerText = "RECONNECTING";
+                connStatus.style.color = "var(--warning)";
+                connStatus.style.borderColor = "var(--warning)";
+                connStatus.style.background = "rgba(245, 158, 11, 0.15)";
+                setTimeout(connectWS, 2000);
+            };
+        }
+
+        async function severCall() {
+            if (!activeCallSid) return;
+            try {
+                const res = await fetch(`/twilio/action/${activeCallSid}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'sever' })
+                });
+                if (res.ok) {
+                    statusDesc.innerText = "Call successfully terminated by SWIFT Guard!";
+                    severBtn.style.display = "none";
+                }
+            } catch (err) {
+                alert("Failed to terminate call: " + err);
+            }
+        }
+
+        connectWS();
+    </script>
+</body>
+</html>
