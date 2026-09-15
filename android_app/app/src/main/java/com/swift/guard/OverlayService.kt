@@ -34,6 +34,10 @@ class OverlayService : Service(), SwiftTelemetryClient.TelemetryListener {
     private var overlayView: View? = null
     private var telemetryClient: SwiftTelemetryClient? = null
     private var activeCallSid: String = ""
+    private var currentCallerNumber: String = "Active Call"
+    private var sessionStartTime: Long = 0L
+    private var maxSpiRecorded: Double = 0.0
+    private var highestStatusRecorded: String = "authentic"
 
     // UI elements on active widget
     private var riskTextView: TextView? = null
@@ -56,6 +60,7 @@ class OverlayService : Service(), SwiftTelemetryClient.TelemetryListener {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
         val callerNumber = intent?.getStringExtra("callerNumber") ?: "Active Call"
+        currentCallerNumber = callerNumber
 
         if (action == ACTION_SHOW_POPUP) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this)) {
@@ -86,81 +91,107 @@ class OverlayService : Service(), SwiftTelemetryClient.TelemetryListener {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-            y = 140
+            y = 120
         }
 
+        // White card with subtle border
         val container = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(44, 36, 44, 36)
-
-            val background = GradientDrawable().apply {
-                setColor(Color.parseColor("#16152B"))
-                cornerRadius = 40f
-                setStroke(4, Color.parseColor("#6C5CE7"))
+            setPadding(48, 40, 48, 32)
+            val bg = GradientDrawable().apply {
+                setColor(Color.WHITE)
+                cornerRadius = 32f
+                setStroke(2, Color.parseColor("#E0E0E0"))
             }
-            this.background = background
-            elevation = 24f
+            background = bg
+            elevation = 32f
         }
 
-        val title = TextView(this).apply {
-            text = "🛡️ SWIFT Guard"
-            setTextColor(Color.WHITE)
-            textSize = 18f
+        // Brand label
+        val brand = TextView(this).apply {
+            text = "S W I F T"
+            setTextColor(Color.BLACK)
+            textSize = 11f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            letterSpacing = 0.25f
+            gravity = Gravity.CENTER
+        }
+        container.addView(brand)
+
+        // Thin separator — layoutParams set OUTSIDE apply to avoid shadowing
+        val sep1 = View(this).apply {
+            setBackgroundColor(Color.parseColor("#F0F0F0"))
+        }
+        sep1.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, 1
+        ).also { it.setMargins(0, 16, 0, 20) }
+        container.addView(sep1)
+
+        val callerLabel = TextView(this).apply {
+            text = "INCOMING CALL"
+            setTextColor(Color.parseColor("#888888"))
+            textSize = 9f
+            letterSpacing = 0.15f
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 6)
+        }
+        container.addView(callerLabel)
+
+        val callerText = TextView(this).apply {
+            text = callerNumber
+            setTextColor(Color.BLACK)
+            textSize = 16f
             typeface = android.graphics.Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 8)
         }
-        container.addView(title)
+        container.addView(callerText)
 
-        val subtitle = TextView(this).apply {
-            text = "Live Call Detected: $callerNumber\nScan for AI synthetic voice cloning?"
-            setTextColor(Color.parseColor("#A0A0C0"))
-            textSize = 13f
+        val scanLabel = TextView(this).apply {
+            text = "Activate AI voice analysis?"
+            setTextColor(Color.parseColor("#888888"))
+            textSize = 12f
             gravity = Gravity.CENTER
-            setPadding(0, 12, 0, 20)
+            setPadding(0, 0, 0, 24)
         }
-        container.addView(subtitle)
+        container.addView(scanLabel)
 
-        val buttonLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER
-        }
-
+        // Capture WM params before entering Button.apply scope (avoids shadowing by View.layoutParams)
+        val wlp = layoutParams
         val protectBtn = Button(this).apply {
-            text = "Protect Call"
+            text = "PROTECT CALL  →"
             setTextColor(Color.WHITE)
-            textSize = 13f
+            textSize = 12f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            letterSpacing = 0.08f
             background = GradientDrawable().apply {
-                setColor(Color.parseColor("#10B981"))
-                cornerRadius = 24f
+                setColor(Color.BLACK)
+                cornerRadius = 8f
             }
-            setPadding(32, 16, 32, 16)
-            setOnClickListener {
-                activateLiveProtection(layoutParams)
-            }
+            setPadding(0, 32, 0, 32)
+            setOnClickListener { activateLiveProtection(wlp) }
         }
+        protectBtn.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        container.addView(protectBtn)
 
+        // Ghost dismiss button
         val dismissBtn = Button(this).apply {
-            text = "Dismiss"
-            setTextColor(Color.parseColor("#CBD5E1"))
-            textSize = 13f
-            background = GradientDrawable().apply {
-                setColor(Color.parseColor("#374151"))
-                cornerRadius = 24f
-            }
-            setPadding(32, 16, 32, 16)
-            setOnClickListener {
-                cleanupAndStop()
-            }
+            text = "MAYBE LATER"
+            setTextColor(Color.parseColor("#888888"))
+            textSize = 11f
+            letterSpacing = 0.08f
+            background = GradientDrawable().apply { setColor(Color.TRANSPARENT) }
+            setPadding(0, 16, 0, 16)
+            setOnClickListener { cleanupAndStop() }
         }
-
-        val spacer = View(this).apply {
-            this.layoutParams = LinearLayout.LayoutParams(24, 1)
-        }
-
-        buttonLayout.addView(protectBtn)
-        buttonLayout.addView(spacer)
-        buttonLayout.addView(dismissBtn)
-        container.addView(buttonLayout)
+        dismissBtn.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).also { it.setMargins(0, 8, 0, 0) }
+        container.addView(dismissBtn)
 
         setupDrag(container, layoutParams)
         overlayView = container
@@ -171,75 +202,119 @@ class OverlayService : Service(), SwiftTelemetryClient.TelemetryListener {
         }
     }
 
+
     private fun activateLiveProtection(params: WindowManager.LayoutParams) {
         removeOverlay()
 
+        // White card, minimal border
         val container = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(36, 28, 36, 28)
-
-            val background = GradientDrawable().apply {
-                setColor(Color.parseColor("#0F0E17"))
+            setPadding(40, 32, 40, 28)
+            val bg = GradientDrawable().apply {
+                setColor(Color.WHITE)
                 cornerRadius = 32f
-                setStroke(4, Color.parseColor("#10B981"))
+                setStroke(2, Color.parseColor("#E0E0E0"))
             }
-            this.background = background
-            elevation = 28f
+            background = bg
+            elevation = 32f
         }
         widgetContainer = container
 
-        statusTextView = TextView(this).apply {
-            text = "SWIFT GUARD CONNECTING..."
-            setTextColor(Color.parseColor("#10B981"))
-            textSize = 12f
+        // Brand + connecting row
+        val brandRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        val brandLabel = TextView(this).apply {
+            text = "S W I F T"
+            setTextColor(Color.BLACK)
+            textSize = 10f
             typeface = android.graphics.Typeface.DEFAULT_BOLD
+            letterSpacing = 0.2f
+        }
+        brandLabel.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        statusTextView = TextView(this).apply {
+            text = "CONNECTING..."
+            setTextColor(Color.parseColor("#888888"))
+            textSize = 9f
+            letterSpacing = 0.1f
+        }
+        brandRow.addView(brandLabel)
+        brandRow.addView(statusTextView)
+        container.addView(brandRow)
+
+        // Divider
+        val sep = View(this).apply {
+            setBackgroundColor(Color.parseColor("#F0F0F0"))
+        }
+        sep.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, 1
+        ).also { it.setMargins(0, 14, 0, 18) }
+        container.addView(sep)
+
+        // SPI label
+        val spiLabel = TextView(this).apply {
+            text = "SPI AI"
+            setTextColor(Color.parseColor("#888888"))
+            textSize = 9f
+            letterSpacing = 0.15f
             gravity = Gravity.CENTER
         }
-        container.addView(statusTextView)
+        container.addView(spiLabel)
 
+        // Large SPI percentage — center stage
         riskTextView = TextView(this).apply {
-            text = "Deepfake SPI: 0%"
-            setTextColor(Color.WHITE)
-            textSize = 20f
+            text = "0%"
+            setTextColor(Color.BLACK)
+            textSize = 52f
             typeface = android.graphics.Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
-            setPadding(0, 10, 0, 10)
+            setPadding(0, 4, 0, 4)
         }
         container.addView(riskTextView)
 
+        // Sever button — full width black, hidden until threat
         severButton = Button(this).apply {
-            text = "🚨 SEVER CALL (DROP SCAMMER)"
+            text = "SEVER CALL  →"
             setTextColor(Color.WHITE)
             textSize = 11f
             typeface = android.graphics.Typeface.DEFAULT_BOLD
+            letterSpacing = 0.08f
             visibility = View.GONE
             background = GradientDrawable().apply {
-                setColor(Color.parseColor("#EF4444"))
-                cornerRadius = 20f
+                setColor(Color.BLACK)
+                cornerRadius = 8f
             }
+            setPadding(0, 28, 0, 28)
             setOnClickListener {
                 telemetryClient?.severCall(activeCallSid) { success ->
                     postToMain {
-                        riskTextView?.text = if (success) "Call Terminated!" else "Sever Failed"
+                        riskTextView?.text = if (success) "SEVERED" else "FAILED"
                         severButton?.visibility = View.GONE
                     }
                 }
             }
         }
+        severButton?.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).also { it.setMargins(0, 16, 0, 0) }
         container.addView(severButton)
 
+        // Close — ghost text button
         val closeBtn = Button(this).apply {
-            text = "Close Guard"
-            setTextColor(Color.parseColor("#CBD5E1"))
-            textSize = 11f
-            background = GradientDrawable().apply {
-                setColor(Color.parseColor("#282548"))
-                cornerRadius = 18f
-            }
-            setOnClickListener {
-                cleanupAndStop()
-            }
+            text = "CLOSE GUARD"
+            setTextColor(Color.parseColor("#AAAAAA"))
+            textSize = 10f
+            letterSpacing = 0.08f
+            background = GradientDrawable().apply { setColor(Color.TRANSPARENT) }
+            setPadding(0, 16, 0, 0)
+            setOnClickListener { cleanupAndStop() }
         }
+        closeBtn.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).also { it.setMargins(0, 8, 0, 0) }
         container.addView(closeBtn)
 
         setupDrag(container, params)
@@ -251,6 +326,9 @@ class OverlayService : Service(), SwiftTelemetryClient.TelemetryListener {
         }
 
         // 1. Connect WebSocket to SWIFT GPU inference server
+        sessionStartTime = System.currentTimeMillis()
+        maxSpiRecorded = 0.0
+        highestStatusRecorded = "authentic"
         telemetryClient?.connect()
 
         // 2. Automatically place call to bridge line (+12049000957)
@@ -268,39 +346,45 @@ class OverlayService : Service(), SwiftTelemetryClient.TelemetryListener {
         }
     }
 
+
     // Telemetry Callbacks
     override fun onConnected() {
         postToMain {
-            statusTextView?.text = "LIVE SWIFT GUARD ACTIVE"
+            statusTextView?.text = "LIVE"
+            statusTextView?.setTextColor(Color.parseColor("#22C55E"))
         }
     }
 
     override fun onTelemetryReceived(spi: Double, status: String, callSid: String) {
         if (callSid.isNotEmpty()) activeCallSid = callSid
+        if (spi > maxSpiRecorded) maxSpiRecorded = spi
+        if (status == "threat" || (status == "elevated" && highestStatusRecorded != "threat")) {
+            highestStatusRecorded = status
+        }
         val percent = (spi * 100).toInt()
         val isThreat = status == "threat" || spi >= 0.70
         val isElevated = status == "elevated" || spi >= 0.30
 
         postToMain {
-            riskTextView?.text = "Deepfake SPI: $percent%"
+            riskTextView?.text = "$percent%"
 
             if (isThreat) {
-                statusTextView?.text = "CRITICAL: AI VOICE DETECTED!"
-                statusTextView?.setTextColor(Color.parseColor("#EF4444"))
-                riskTextView?.setTextColor(Color.parseColor("#EF4444"))
-                (widgetContainer?.background as? GradientDrawable)?.setStroke(4, Color.parseColor("#EF4444"))
+                statusTextView?.text = "AI DETECTED"
+                statusTextView?.setTextColor(Color.parseColor("#DC2626"))
+                riskTextView?.setTextColor(Color.parseColor("#DC2626"))
+                (widgetContainer?.background as? GradientDrawable)?.setStroke(2, Color.parseColor("#DC2626"))
                 severButton?.visibility = View.VISIBLE
             } else if (isElevated) {
-                statusTextView?.text = "MONITORING ANOMALY"
-                statusTextView?.setTextColor(Color.parseColor("#F59E0B"))
-                riskTextView?.setTextColor(Color.parseColor("#F59E0B"))
-                (widgetContainer?.background as? GradientDrawable)?.setStroke(4, Color.parseColor("#F59E0B"))
+                statusTextView?.text = "MONITORING"
+                statusTextView?.setTextColor(Color.parseColor("#D97706"))
+                riskTextView?.setTextColor(Color.parseColor("#D97706"))
+                (widgetContainer?.background as? GradientDrawable)?.setStroke(2, Color.parseColor("#E0E0E0"))
                 severButton?.visibility = View.GONE
             } else {
-                statusTextView?.text = "AUTHENTIC HUMAN VERIFIED"
-                statusTextView?.setTextColor(Color.parseColor("#10B981"))
-                riskTextView?.setTextColor(Color.parseColor("#10B981"))
-                (widgetContainer?.background as? GradientDrawable)?.setStroke(4, Color.parseColor("#10B981"))
+                statusTextView?.text = "AUTHENTIC"
+                statusTextView?.setTextColor(Color.parseColor("#16A34A"))
+                riskTextView?.setTextColor(Color.BLACK)
+                (widgetContainer?.background as? GradientDrawable)?.setStroke(2, Color.parseColor("#E0E0E0"))
                 severButton?.visibility = View.GONE
             }
         }
@@ -308,9 +392,11 @@ class OverlayService : Service(), SwiftTelemetryClient.TelemetryListener {
 
     override fun onDisconnected() {
         postToMain {
-            statusTextView?.text = "SWIFT GUARD DISCONNECTED"
+            statusTextView?.text = "OFFLINE"
+            statusTextView?.setTextColor(Color.parseColor("#888888"))
         }
     }
+
 
     override fun onError(error: String) {
         postToMain {
@@ -362,6 +448,19 @@ class OverlayService : Service(), SwiftTelemetryClient.TelemetryListener {
     }
 
     private fun cleanupAndStop() {
+        if (sessionStartTime > 0L) {
+            val durationSec = ((System.currentTimeMillis() - sessionStartTime) / 1000).toInt()
+            val entry = CallLogEntry(
+                callerNumber = currentCallerNumber,
+                timestamp = sessionStartTime,
+                durationSeconds = if (durationSec > 0) durationSec else 5,
+                spiScore = maxSpiRecorded,
+                spiStatus = highestStatusRecorded,
+                callDirection = "incoming"
+            )
+            CallLogManager.saveLog(applicationContext, entry)
+            sessionStartTime = 0L
+        }
         telemetryClient?.disconnect()
         telemetryClient = null
         removeOverlay()

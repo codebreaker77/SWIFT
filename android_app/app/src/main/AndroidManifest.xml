@@ -20,15 +20,30 @@
         android:theme="@style/Theme.SWIFTGuard"
         android:usesCleartextTraffic="true">
 
-        <!-- Main Dashboard Activity -->
+        <!-- Splash / Landing Screen Activity (LAUNCHER) -->
         <activity
-            android:name=".MainActivity"
+            android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Main Dashboard Activity -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+
+        <!-- Insights Activity -->
+        <activity
+            android:name=".InsightsActivity"
+            android:exported="false" />
+
+        <!-- Settings Activity -->
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
 
         <!-- BroadcastReceiver for Incoming / Outgoing Calls -->
         <receiver

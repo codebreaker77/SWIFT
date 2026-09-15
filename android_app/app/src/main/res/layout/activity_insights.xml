@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/insightsRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="64dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="28dp"
+            android:paddingEnd="28dp"
+            android:paddingTop="52dp"
+            android:paddingBottom="24dp">
+
+            <!-- Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="40dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:id="@+id/tvInsightsBrand"
+                    android:text="S W I F T"
+                    android:textSize="14sp"
+                    android:letterSpacing="0.25"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tvInsightsTitle"
+                    android:text="INSIGHTS"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.15" />
+            </LinearLayout>
+
+            <!-- Stats row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="32dp">
+
+                <!-- Total calls -->
+                <LinearLayout
+                    android:id="@+id/cardTotalCalls"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingTop="20dp"
+                    android:paddingBottom="20dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:layout_marginEnd="8dp">
+
+                    <TextView
+                        android:id="@+id/tvTotalCallsNum"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="36sp"
+                        android:fontFamily="sans-serif-light" />
+                    <TextView
+                        android:id="@+id/tvTotalCallsLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CALLS"
+                        android:textSize="9sp"
+                        android:letterSpacing="0.1"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+
+                <!-- Threat count -->
+                <LinearLayout
+                    android:id="@+id/cardThreats"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingTop="20dp"
+                    android:paddingBottom="20dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:layout_marginEnd="8dp">
+
+                    <TextView
+                        android:id="@+id/tvThreatNum"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="36sp"
+                        android:fontFamily="sans-serif-light" />
+                    <TextView
+                        android:id="@+id/tvThreatLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="THREATS"
+                        android:textSize="9sp"
+                        android:letterSpacing="0.1"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+
+                <!-- Avg SPI -->
+                <LinearLayout
+                    android:id="@+id/cardAvgSpi"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingTop="20dp"
+                    android:paddingBottom="20dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <TextView
+                        android:id="@+id/tvAvgSpiNum"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0%"
+                        android:textSize="36sp"
+                        android:fontFamily="sans-serif-light" />
+                    <TextView
+                        android:id="@+id/tvAvgSpiLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="AVG SPI"
+                        android:textSize="9sp"
+                        android:letterSpacing="0.1"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:id="@+id/div1"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="28dp" />
+
+            <!-- Call History label -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+                <TextView
+                    android:id="@+id/tvHistoryLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="CALL HISTORY"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.15"
+                    android:fontFamily="sans-serif-medium" />
+                <TextView
+                    android:id="@+id/tvClearLogs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CLEAR ALL"
+                    android:textSize="10sp"
+                    android:letterSpacing="0.1"
+                    android:padding="4dp"
+                    android:background="?android:selectableItemBackground" />
+            </LinearLayout>
+
+            <!-- Dynamic call log rows container -->
+            <LinearLayout
+                android:id="@+id/llCallLogContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Tab Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:id="@+id/bottomBarInsights"
+        android:elevation="8dp">
+
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:id="@+id/divBottom" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+                android:orientation="vertical" android:gravity="center" android:id="@+id/tabHome"
+                android:background="?android:selectableItemBackground">
+                <View android:layout_width="8dp" android:layout_height="8dp" android:id="@+id/dotHome" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="HOME" android:textSize="9sp" android:letterSpacing="0.1"
+                    android:layout_marginTop="4dp" android:id="@+id/tvTabHome" />
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+                android:orientation="vertical" android:gravity="center" android:id="@+id/tabInsights"
+                android:background="?android:selectableItemBackground">
+                <View android:layout_width="8dp" android:layout_height="8dp" android:id="@+id/dotInsights" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="INSIGHTS" android:textSize="9sp" android:letterSpacing="0.1"
+                    android:layout_marginTop="4dp" android:id="@+id/tvTabInsights" />
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+                android:orientation="vertical" android:gravity="center" android:id="@+id/tabSettings"
+                android:background="?android:selectableItemBackground">
+                <View android:layout_width="8dp" android:layout_height="8dp" android:id="@+id/dotSettings" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="SETTINGS" android:textSize="9sp" android:letterSpacing="0.1"
+                    android:layout_marginTop="4dp" android:id="@+id/tvTabSettings" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>

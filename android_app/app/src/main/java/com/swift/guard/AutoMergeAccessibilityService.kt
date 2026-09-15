@@ -25,8 +25,28 @@ class AutoMergeAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (!isAutoMergeEnabled || event == null) return
 
+        // Package filter: Only react when inside in-call or phone dialer apps!
+        val pkg = event.packageName?.toString()?.lowercase() ?: ""
+        val isDialerApp = pkg.contains("dialer") ||
+                pkg.contains("incall") ||
+                pkg.contains("telecom") ||
+                pkg.contains("phone") ||
+                pkg.contains("calling") ||
+                pkg.contains("com.android.server.telecom") ||
+                pkg.contains("google.android.dialer") ||
+                pkg.contains("samsung.android.incallui") ||
+                pkg.contains("oplus") && pkg.contains("phone")
+
+        if (!isDialerApp) {
+            return
+        }
+
         val rootNode = rootInActiveWindow ?: return
-        searchAndClickMerge(rootNode)
+        try {
+            searchAndClickMerge(rootNode)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error evaluating node: ${e.message}")
+        }
     }
 
     private fun searchAndClickMerge(node: AccessibilityNodeInfo): Boolean {
@@ -51,7 +71,6 @@ class AutoMergeAccessibilityService : AccessibilityService() {
             val child = node.getChild(i)
             if (child != null) {
                 val clicked = searchAndClickMerge(child)
-                child.recycle()
                 if (clicked) return true
             }
         }

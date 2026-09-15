@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/settingsRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="64dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="28dp"
+            android:paddingEnd="28dp"
+            android:paddingTop="52dp"
+            android:paddingBottom="24dp">
+
+            <!-- Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="48dp">
+                <TextView
+                    android:id="@+id/tvSettingsBrand"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="S W I F T"
+                    android:textSize="14sp"
+                    android:letterSpacing="0.25"
+                    android:fontFamily="sans-serif-medium" />
+                <TextView
+                    android:id="@+id/tvSettingsTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SETTINGS"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.15" />
+            </LinearLayout>
+
+            <!-- APPEARANCE section -->
+            <TextView
+                android:id="@+id/tvSectionAppearance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="APPEARANCE"
+                android:textSize="11sp"
+                android:letterSpacing="0.15"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Dark Mode Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/tvDarkModeTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Dark Mode"
+                        android:textSize="15sp"
+                        android:fontFamily="sans-serif-medium" />
+                    <TextView
+                        android:id="@+id/tvDarkModeSubtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Switch between light and dark themes"
+                        android:textSize="12sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+                <Switch
+                    android:id="@+id/switchDarkMode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <View android:id="@+id/div1" android:layout_width="match_parent" android:layout_height="1dp"
+                android:layout_marginBottom="28dp" />
+
+            <!-- PROTECTION section -->
+            <TextView
+                android:id="@+id/tvSectionProtection"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PROTECTION"
+                android:textSize="11sp"
+                android:letterSpacing="0.15"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Server URL Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="8dp"
+                android:paddingBottom="16dp">
+                <TextView
+                    android:id="@+id/tvServerUrlLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Backend Server URL"
+                    android:textSize="15sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:layout_marginBottom="4dp" />
+                <TextView
+                    android:id="@+id/tvServerUrlSub"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ngrok or local endpoint for SPI inference"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="12dp" />
+                <EditText
+                    android:id="@+id/etServerUrl"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textUri"
+                    android:textSize="13sp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:paddingStart="0dp"
+                    android:hint="https://...ngrok-free.dev"
+                    android:background="@null"
+                    android:layout_marginBottom="8dp" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:id="@+id/etUnderline" />
+                <TextView
+                    android:id="@+id/btnSaveUrl"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SAVE"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.1"
+                    android:fontFamily="sans-serif-medium"
+                    android:layout_marginTop="12dp"
+                    android:padding="4dp"
+                    android:background="?android:selectableItemBackground" />
+            </LinearLayout>
+
+            <View android:id="@+id/div2" android:layout_width="match_parent" android:layout_height="1dp"
+                android:layout_marginBottom="28dp" />
+
+            <!-- ABOUT section -->
+            <TextView
+                android:id="@+id/tvSectionAbout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ABOUT"
+                android:textSize="11sp"
+                android:letterSpacing="0.15"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="16dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/tvAboutTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SWIFT Guard"
+                        android:textSize="15sp"
+                        android:fontFamily="sans-serif-medium" />
+                    <TextView
+                        android:id="@+id/tvAboutSub"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Real-Time Telephony Deepfake Forensics"
+                        android:textSize="12sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+                <TextView
+                    android:id="@+id/tvAboutVersion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="v0.1"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Tab Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:id="@+id/bottomBarSettings"
+        android:elevation="8dp">
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:id="@+id/divBottom" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
+            <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+                android:orientation="vertical" android:gravity="center" android:id="@+id/tabHome"
+                android:background="?android:selectableItemBackground">
+                <View android:layout_width="8dp" android:layout_height="8dp" android:id="@+id/dotHome" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="HOME" android:textSize="9sp" android:letterSpacing="0.1"
+                    android:layout_marginTop="4dp" android:id="@+id/tvTabHome" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+                android:orientation="vertical" android:gravity="center" android:id="@+id/tabInsights"
+                android:background="?android:selectableItemBackground">
+                <View android:layout_width="8dp" android:layout_height="8dp" android:id="@+id/dotInsights" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="INSIGHTS" android:textSize="9sp" android:letterSpacing="0.1"
+                    android:layout_marginTop="4dp" android:id="@+id/tvTabInsights" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+                android:orientation="vertical" android:gravity="center" android:id="@+id/tabSettings"
+                android:background="?android:selectableItemBackground">
+                <View android:layout_width="8dp" android:layout_height="8dp" android:id="@+id/dotSettings" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="SETTINGS" android:textSize="9sp" android:letterSpacing="0.1"
+                    android:layout_marginTop="4dp" android:id="@+id/tvTabSettings" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>
