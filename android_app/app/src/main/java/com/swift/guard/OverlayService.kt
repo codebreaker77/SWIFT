@@ -57,7 +57,11 @@ class OverlayService : Service(), SwiftTelemetryClient.TelemetryListener {
 
         if (action == ACTION_SHOW_POPUP) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this)) {
-                showInitialPrompt(callerNumber)
+                postToMain {
+                    showInitialPrompt(callerNumber)
+                }
+            } else {
+                Log.w("SWIFT_Overlay", "Cannot draw overlays: permission denied")
             }
         } else if (action == ACTION_HIDE_POPUP) {
             cleanupAndStop()
