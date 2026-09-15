@@ -48,7 +48,9 @@ class OverlayService : Service(), SwiftTelemetryClient.TelemetryListener {
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, createNotification("SWIFT Deepfake Guard Active"))
-        telemetryClient = SwiftTelemetryClient(listener = this)
+        val prefs = getSharedPreferences("swift_prefs", Context.MODE_PRIVATE)
+        val activeServerUrl = prefs.getString("server_url", "https://berna-uninfused-sherron.ngrok-free.dev") ?: "https://berna-uninfused-sherron.ngrok-free.dev"
+        telemetryClient = SwiftTelemetryClient(serverUrl = activeServerUrl, listener = this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

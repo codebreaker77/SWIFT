@@ -21,8 +21,22 @@ class MainActivity : AppCompatActivity() {
 
         checkAndRequestPermissions()
 
+        val prefs = getSharedPreferences("swift_prefs", MODE_PRIVATE)
+        val etServerUrl = findViewById<android.widget.EditText>(R.id.etServerUrl)
+        val btnSaveUrl = findViewById<Button>(R.id.btnSaveUrl)
         val btnTestPopup = findViewById<Button>(R.id.btnTestPopup)
         val btnOverlayPerm = findViewById<Button>(R.id.btnOverlayPerm)
+
+        val savedUrl = prefs.getString("server_url", "https://berna-uninfused-sherron.ngrok-free.dev")
+        etServerUrl.setText(savedUrl)
+
+        btnSaveUrl.setOnClickListener {
+            val newUrl = etServerUrl.text.toString().trim()
+            if (newUrl.isNotEmpty()) {
+                prefs.edit().putString("server_url", newUrl).apply()
+                Toast.makeText(this, "Server URL updated!", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         btnOverlayPerm.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
