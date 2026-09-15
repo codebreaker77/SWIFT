@@ -253,14 +253,18 @@ class OverlayService : Service(), SwiftTelemetryClient.TelemetryListener {
         // 1. Connect WebSocket to SWIFT GPU inference server
         telemetryClient?.connect()
 
-        // 2. Launch Dialer intent for the bridge line (+12049000957) so user can tap "Merge"
+        // 2. Automatically place call to bridge line (+12049000957)
         try {
+            val callIntent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$BRIDGE_NUMBER")).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            startActivity(callIntent)
+        } catch (e: Exception) {
+            // Fallback to ACTION_DIAL if CALL_PHONE permission not yet granted
             val dialIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$BRIDGE_NUMBER")).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             startActivity(dialIntent)
-        } catch (e: Exception) {
-            Log.e("SWIFT_Overlay", "Error launching dialer: ${e.message}")
         }
     }
 

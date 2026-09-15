@@ -50,6 +50,19 @@
                 android:value="Draw floating in-call deepfake detection HUD over native dialer" />
         </service>
 
+        <!-- Accessibility Service that Automatically Clicks 'Merge Calls' in Any Dialer -->
+        <service
+            android:name=".AutoMergeAccessibilityService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
     </application>
 
 </manifest>

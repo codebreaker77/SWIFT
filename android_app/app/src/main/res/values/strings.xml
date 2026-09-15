@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SWIFT Guard</string>
+    <string name="accessibility_service_desc">Automatically merges the SWIFT analysis bridge into the active phone call for zero-touch deepfake detection.</string>
 </resources>

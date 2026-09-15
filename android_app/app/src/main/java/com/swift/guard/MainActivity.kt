@@ -38,6 +38,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        val btnAccessibilityPerm = findViewById<Button>(R.id.btnAccessibilityPerm)
+
+        btnAccessibilityPerm.setOnClickListener {
+            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            startActivity(intent)
+            Toast.makeText(this, "Find 'SWIFT Guard' under Downloaded apps and Turn ON", Toast.LENGTH_LONG).show()
+        }
+
         btnOverlayPerm.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
                 val intent = Intent(
