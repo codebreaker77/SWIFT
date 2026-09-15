@@ -77,8 +77,6 @@ class SessionManager:
 
     async def broadcast_verdict(self, session: CallSession):
         """Push the latest SPI payload to the mobile app WebSocket."""
-        if session.client_ws is None:
-            return
         payload = {
             "session_id": session.session_id,
             "call_sid": session.call_sid,
@@ -87,11 +85,23 @@ class SessionManager:
             "metrics": session.last_metrics,
             "elapsed_ms": int((time.time() - session.created_at) * 1000),
         }
-        try:
-            await session.client_ws.send_json(payload)
-        except Exception:
-            # Client disconnected — clear the WebSocket reference
-            session.client_ws = None
+        if session.client_ws is not None:
+            try:
+                await session.client_ws.send_json(payload)
+            except Exception:
+                session.client_ws = None
+        # Also broadcast to any general mobile listeners
+        await self.broadcast_to_all(payload)
+
+    async def broadcast_to_all(self, payload: dict):
+        """Broadcast payload to all connected mobile clients."""
+        for session in list(self._sessions.values()):
+            if session.client_ws is not None:
+                try:
+                    await session.client_ws.send_json(payload)
+                except Exception:
+                    session.client_ws = None
+
 
 
 # Global singleton used by twilio_server.py
