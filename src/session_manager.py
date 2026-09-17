@@ -37,7 +37,8 @@ class CallSession:
     # Mobile app telemetry WebSocket
     client_ws: Optional[WebSocket] = None
 
-    # Twilio stream WebSocket (server-side handle)
+    # Telephony stream WebSocket (SignalWire / Twilio handle)
+    telephony_ws: Optional[Any] = None
     twilio_ws: Optional[Any] = None
 
     # Timing

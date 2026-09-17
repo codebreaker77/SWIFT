@@ -17,7 +17,7 @@ The following diagram illustrates the complete data pipeline, from telephonic au
 ```mermaid
 graph TD
     subgraph Layer1 [1. Ingestion Layer]
-        A[Twilio Media Stream] -->|WebSocket 8kHz μ-law| B[Ingestion Receiver]
+        A[SignalWire / Telephony Media Stream] -->|WebSocket 8kHz μ-law| B[Ingestion Receiver]
     end
     
     subgraph Layer2 [2. Buffer Management]
@@ -48,7 +48,7 @@ graph TD
 
 ### 1. Ingestion Layer (Telephony and Streaming)
 
-* **Audio Ingestion:** Ingests live dual-channel or mono phone audio via Twilio Media Streams or a WebRTC audio stream over a secure WebSocket (`wss://`) at 8 kHz μ-law.
+* **Audio Ingestion:** Ingests live dual-channel or mono phone audio via SignalWire Media Streams (or WebRTC) over a secure WebSocket (`wss://`) at 8 kHz μ-law.
 * **Resampling and Normalization:** Standardizes and upsamples the incoming byte stream into linear 16-bit 16 kHz PCM arrays using optimal Fourier decimation to prevent high-frequency aliasing.
 
 ### 2. Buffer Management (FastAPI Sliding Window)
@@ -77,7 +77,7 @@ The evaluated SPI dictates programmatic action within the telephony environment.
 
 * **Nominal State (SPI < 0.30):** Verified authentic stream; session integrity remains authenticated.
 * **Elevated Risk State (0.30 ≤ SPI < 0.70):** Triggers continuous telemetry polling and escalates session logging for post-call audit.
-* **High-Confidence Threat (SPI ≥ 0.70):** Authenticates a spoofing event and executes automated mitigation protocols. This triggers automated call severance or programmatic mute via the Twilio REST API.
+* **High-Confidence Threat (SPI ≥ 0.70):** Authenticates a spoofing event and executes automated mitigation protocols. This triggers automated call severance or programmatic mute via the SignalWire REST API.
 
 ### 6. Live In-Call Telemetry and Heads-Up Display (HUD) Widget
 

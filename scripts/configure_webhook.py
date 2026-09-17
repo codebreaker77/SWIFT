@@ -20,8 +20,9 @@ if "YOUR-NGROK" in PUBLIC_URL:
     print("        Run 'ngrok http 8001', copy the https URL, and set it in .env")
     sys.exit(1)
 
-webhook_url = f"{PUBLIC_URL}/twilio/inbound"
-status_url  = f"{PUBLIC_URL}/twilio/status_callback"
+endpoint_prefix = "signalwire" if PROVIDER == "signalwire" else "twilio"
+webhook_url = f"{PUBLIC_URL}/{endpoint_prefix}/inbound"
+status_url  = f"{PUBLIC_URL}/{endpoint_prefix}/status_callback"
 
 if PROVIDER == "signalwire":
     from signalwire.rest import Client
