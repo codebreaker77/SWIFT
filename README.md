@@ -112,11 +112,12 @@ SWIFT/
 
 ### Prerequisites
 * Python 3.9+
-* ONNX Runtime compatible host environment
+* CUDA-compatible GPU (recommended) or CPU
+* ONNX Runtime / PyTorch 2.0+
 
 ### Setup
 
-Clone the repository and install the required dependencies:
+Clone the repository and install the dependencies:
 
 ```bash
 git clone https://github.com/codebreaker77/SWIFT.git
@@ -124,20 +125,86 @@ cd SWIFT
 pip install -r requirements.txt
 ```
 
-### Running the Live Server
+---
 
-Start the backend WebSocket server and telemetry dashboard:
+## Real-Time Testing & Model Inference
 
-```bash
-python server.py 8000
-```
-Navigate to `http://localhost:8000` to access the HUD. Expose the port via a tunneling service to configure the Twilio Media Streams webhook.
+SWIFT includes a dedicated forensic testing utility (`scripts/test_model_realtime.py`) to test PhysioSpecNet directly across multiple operational modes:
 
-### Fine-Tuning the Model
-
-To adapt the model to specific telephony hardware profiles:
+### 1. Direct On-The-Fly Neural AI Voice Testing (Zero Degradation)
+Synthesizes speech on-the-fly using state-of-the-art neural cloud TTS engines (Azure / OpenAI / ElevenLabs architectures) and injects the waveform directly into the inference pipeline in-memory:
 
 ```bash
-python evaluate_and_train.py
+# Test with default male neural voice (GuyNeural)
+python scripts/test_model_realtime.py --tts "This is an urgent call regarding your financial accounts. Please state your passcode."
+
+# Test with female expressive neural voice (JennyNeural)
+python scripts/test_model_realtime.py --tts "Good morning, thank you for calling customer support. How may I assist you?" --voice en-US-JennyNeural
+
+# Test with conversational neural voice (RyanNeural)
+python scripts/test_model_realtime.py --tts "Hey there, I wanted to follow up on the proposal we discussed." --voice en-US-RyanNeural
 ```
-This script parses audio samples, computes the 6-channel acoustic feature maps, trains PhysioSpecNet, and overwrites the checkpoint weights based on Validation Loss optimization.
+
+### 2. Live Microphone Forensic Monitoring
+Listens directly to your local system microphone with sub-second sliding window analysis and prints a real-time risk meter in the terminal:
+
+```bash
+python scripts/test_model_realtime.py --mic
+```
+
+### 3. File Forensic Analysis
+Evaluates any recorded WAV or MP3 audio file:
+
+```bash
+python scripts/test_model_realtime.py --file public/samples/modern_tts/tts_male_deep_1.wav
+python scripts/test_model_realtime.py --file public/samples/real_human_1.wav
+```
+
+### 4. Automated Benchmark Suite
+Runs a quick automated verification across all local authentic human samples and AI voice models:
+
+```bash
+python scripts/test_model_realtime.py
+```
+
+> [!NOTE]
+> **Why Acoustic Phone-to-Mic Playback Can Mislead:**
+> Playing an AI voice from a mobile phone loudspeaker into a computer/phone microphone introduces Room Impulse Response (RIR), acoustic reflections, room reverb, and physical loudspeaker frequency distortion. The model extracts phase unwrapping maps and micro-acoustic jitter; room reverb can mask subtle vocoder phase anomalies. To test AI voices accurately, always use direct file evaluation (`--file`), direct in-memory neural generation (`--tts`), or a virtual audio cable (e.g. VB-Audio Cable).
+
+---
+
+## Training & Modern Neural TTS Calibration
+
+To train PhysioSpecNet on genuine multi-speaker data and modern neural cloud TTS vocoders:
+
+### 1. Ingest Modern Cloud TTS Voices
+Generate 25+ high-fidelity multi-speaker neural samples (male, female, deep, conversational, expressive) across Azure/OpenAI neural voices:
+
+```bash
+python scripts/generate_modern_tts_samples.py
+```
+
+### 2. Fine-Tune on Multi-Engine TTS & Telephony Codecs
+Trains PhysioSpecNet using Cosine Annealing, G.711 $\mu$-law transcoding augmentation, and balanced real human vs neural TTS speech pools:
+
+```bash
+python scripts/finetune_modern_tts.py
+```
+
+### 3. Full Academic Journal Benchmark (Google Colab)
+For large-scale multi-speaker training (2,500+ samples, 3-way ablation study, 300 DPI publication plots, LaTeX tables, minDCF, and EER):
+Open and run [`notebooks/PhysioSpecNet_Colab_Training.ipynb`](file:///notebooks/PhysioSpecNet_Colab_Training.ipynb) in Google Colab with GPU acceleration.
+
+---
+
+## Running the Live Telephony Server
+
+Start the backend WebSocket server and telemetry dashboard with SignalWire telephony:
+
+```bash
+python -m uvicorn signalwire_server:app --host 0.0.0.0 --port 8001
+```
+
+* Navigate to `http://localhost:8001` to access the live Heads-Up Display (HUD).
+* Configure your SignalWire phone number to route incoming voice calls to your public URL (via ngrok):
+  `https://<your-ngrok-domain>/signalwire/voice`

@@ -32,6 +32,9 @@ if sys.platform == 'win32':
     except Exception:
         pass
 
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 from src.config import AudioConfig, LFCCConfig, CHECKPOINT_DIR
 from src.features.forensic_spectrogram import ForensicSpectrogramExtractor
 from src.models.physiospecnet import PhysioSpecNet
@@ -62,6 +65,8 @@ def main():
     parser = argparse.ArgumentParser(description="Test newly trained SWIFT model in real-time")
     parser.add_argument("--mic", action="store_true", help="Stream directly from system microphone")
     parser.add_argument("--file", type=str, default="", help="Path to audio file to test")
+    parser.add_argument("--tts", type=str, default="", help="Generate on-the-fly Neural AI voice and test directly")
+    parser.add_argument("--voice", type=str, default="en-US-GuyNeural", help="Neural TTS voice name (e.g., en-US-GuyNeural, en-US-JennyNeural, en-US-RyanNeural)")
     parser.add_argument("--checkpoint", type=str, default="", help="Path to custom model checkpoint")
     args = parser.parse_args()
 
@@ -87,12 +92,46 @@ def main():
     model.eval()
     print(f"[✓] Successfully loaded model from: {ckpt_path}")
 
-    # 2. Test Audio File Mode
+    # 2. Direct On-The-Fly Neural TTS Synthesis & Testing
+    if args.tts:
+        text = args.tts
+        voice = args.voice
+        print(f"\n[*] Synthesizing modern cloud neural TTS ({voice})...")
+        print(f"    Text: \"{text}\"")
+
+        import asyncio
+        import edge_tts
+        tmp_mp3 = os.path.join(PROJECT_ROOT, "public", "samples", "_live_test_tts.mp3")
+        tmp_wav = os.path.join(PROJECT_ROOT, "public", "samples", "_live_test_tts.wav")
+
+        async def generate_speech():
+            comm = edge_tts.Communicate(text, voice)
+            await comm.save(tmp_mp3)
+
+        asyncio.run(generate_speech())
+
+        # Convert to 16kHz PCM WAV
+        import subprocess
+        try:
+            subprocess.run(["ffmpeg", "-y", "-i", tmp_mp3, "-ar", "16000", "-ac", "1", tmp_wav],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        except Exception:
+            # Fallback to soundfile/scipy if ffmpeg is not on PATH
+            import soundfile as sf
+            data, sr = sf.read(tmp_mp3)
+            if len(data.shape) > 1: data = np.mean(data, axis=1)
+            if sr != 16000: data = signal.resample(data, int(len(data) * 16000 / sr)).astype(np.float32)
+            sf.write(tmp_wav, data, 16000)
+
+        # Set args.file to the generated wav
+        args.file = tmp_wav
+
+    # 3. Test Audio File Mode
     if args.file:
         if not os.path.exists(args.file):
             print(f"[ERROR] File not found: {args.file}")
             sys.exit(1)
-        print(f"\n[*] Analyzing audio file: {args.file}")
+        print(f"\n[*] Analyzing audio waveform: {args.file}")
         sr, audio_data = wavfile.read(args.file)
         if audio_data.dtype == np.int16: audio = audio_data.astype(np.float32) / 32768.0
         elif audio_data.dtype != np.float32: audio = audio_data.astype(np.float32)
@@ -115,13 +154,13 @@ def main():
         lat = (time.time() - t0) * 1000
 
         print("\n" + "=" * 80)
-        print(f"File: {os.path.basename(args.file)} ({len(audio)/16000:.1f}s)")
+        print(f"Sample: {os.path.basename(args.file)} ({len(audio)/16000:.1f}s)")
         print(f"Latency: {lat:.1f} ms")
         print(format_spi_meter(spi))
         print("=" * 80)
         return
 
-    # 3. Live Microphone Stream Mode
+    # 4. Live Microphone Stream Mode
     if args.mic:
         try:
             import sounddevice as sd
@@ -162,22 +201,35 @@ def main():
                 sys.stdout.write(f"\r[RMS={rms:.4f}] {meter}   ")
                 sys.stdout.flush()
 
-    # 4. Default Interactive Mode (Tests all available sample files)
+    # 5. Default Interactive Mode (Tests diverse sample suite)
     print("\n[*] Running Automated Real-Time Verification on Available Ground-Truth Samples:")
     samples_dir = os.path.join(PROJECT_ROOT, "public", "samples")
     sample_files = []
-    if os.path.exists(samples_dir):
-        for f in os.listdir(samples_dir):
-            if f.endswith(".wav"):
-                sample_files.append(os.path.join(samples_dir, f))
+    
+    # Check modern TTS
+    tts_dir = os.path.join(samples_dir, "modern_tts")
+    if os.path.exists(tts_dir):
+        for f in sorted(os.listdir(tts_dir))[:4]:
+            if f.endswith(".wav"): sample_files.append(os.path.join(tts_dir, f))
+
+    # Check root samples
+    for f in ["real_human_1.wav", "real_human_2.wav", "ai_neural_tts_1.wav", "gptlive_spoof_0.wav"]:
+        p = os.path.join(samples_dir, f)
+        if os.path.exists(p): sample_files.append(p)
+
+    # Check finetune real
+    real_dir = os.path.join(samples_dir, "finetune_real")
+    if os.path.exists(real_dir):
+        for f in sorted(os.listdir(real_dir))[:3]:
+            if f.endswith(".wav"): sample_files.append(os.path.join(real_dir, f))
 
     if not sample_files:
         print("[!] No test audio samples found in public/samples/.")
         print("    Run with --mic to test your microphone: python scripts/test_model_realtime.py --mic")
         return
 
-    print(f"[*] Found {len(sample_files)} sample audio files. Evaluating sequentially:\n")
-    for p in sample_files[:12]:
+    print(f"[*] Found {len(sample_files)} benchmark audio files. Evaluating sequentially:\n")
+    for p in sample_files:
         sr, audio_data = wavfile.read(p)
         if audio_data.dtype == np.int16: audio = audio_data.astype(np.float32) / 32768.0
         elif audio_data.dtype != np.float32: audio = audio_data.astype(np.float32)
@@ -196,11 +248,16 @@ def main():
         lat = (time.time() - t0) * 1000
 
         fname = os.path.basename(p)
-        print(f"  {fname:28s} ({lat:4.1f}ms) -> {format_spi_meter(spi)}")
+        print(f"  {fname:32s} ({lat:4.1f}ms) -> {format_spi_meter(spi)}")
 
     print("\n" + "=" * 80)
-    print("To test with your live voice/microphone, run:")
-    print("    python scripts/test_model_realtime.py --mic")
+    print("Available Real-Time Test Modes:")
+    print("  1. Test Live Microphone:")
+    print("       python scripts/test_model_realtime.py --mic")
+    print("  2. Test On-The-Fly Neural AI Voice (Direct In-Memory, No Mic Degradation):")
+    print("       python scripts/test_model_realtime.py --tts \"Hello, this is a test of AI voice synthesis.\"")
+    print("  3. Test Any Audio File:")
+    print("       python scripts/test_model_realtime.py --file path/to/audio.wav")
     print("=" * 80)
 
 if __name__ == "__main__":
