@@ -1,0 +1,15 @@
+% Auto-Generated LaTeX Table for Journal Submission (IEEE / Interspeech format)
+\begin{table}[t]
+\centering
+\caption{Ablation Study and Performance Benchmark under Telephonic Codec (G.711 $\mu$-law) and Channel Degradation.}
+\label{tab:physiospecnet_results}
+\begin{tabular}{lccccc}
+\hline
+\textbf{Model Architecture} & \textbf{Input Channels} & \textbf{Accuracy (\%)} & \textbf{EER (\%)} & \textbf{minDCF} & \textbf{F1-Score} \\
+\hline
+Baseline: EfficientNet-B0 & 1 (LFCC) & 82.00 & 18.20 & 0.4435 & 0.8193 \\
+Ablation: Direct Concat & 6 (PhysioSpec) & 84.60 & 15.00 & 0.7907 & 0.8469 \\
+\textbf{Proposed: PhysioSpecNet} & \textbf{6 (Cross-Attn)} & \textbf{82.80} & \textbf{15.80} & \textbf{0.7903} & \textbf{0.8340} \\
+\hline
+\end{tabular}
+\end{table}

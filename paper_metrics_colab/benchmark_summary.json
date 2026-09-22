@@ -1,0 +1,23 @@
+{
+    "dataset_samples": 2500,
+    "train_size": 2000,
+    "test_size": 500,
+    "proposed_model": {
+        "accuracy": 82.8,
+        "eer": 15.799411162314387,
+        "min_dcf": 0.7903225806451614,
+        "f1": 0.833976833976834
+    },
+    "ablation_no_attention": {
+        "accuracy": 84.6,
+        "eer": 14.999359959037378,
+        "min_dcf": 0.7907066052227342,
+        "f1": 0.8469184890656064
+    },
+    "baseline_single_channel": {
+        "accuracy": 82.0,
+        "eer": 18.199564772145415,
+        "min_dcf": 0.44354838709677424,
+        "f1": 0.8192771084337349
+    }
+}
